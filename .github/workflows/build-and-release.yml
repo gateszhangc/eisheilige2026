@@ -24,7 +24,6 @@ env:
 
 jobs:
   test:
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 ')
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -46,7 +45,7 @@ jobs:
         run: npm test
 
   build-in-cluster:
-    if: github.event_name != 'pull_request' && (github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 '))
+    if: github.event_name != 'pull_request'
     needs: test
     runs-on: ubuntu-latest
     outputs:
@@ -125,7 +124,7 @@ jobs:
           kubectl -n "$BUILD_NAMESPACE" logs "job/${APP_NAME}-build-${IMAGE_TAG}" --all-containers=true
 
   update-kustomization:
-    if: github.event_name != 'pull_request' && (github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 '))
+    if: github.event_name != 'pull_request'
     needs: build-in-cluster
     runs-on: ubuntu-latest
     steps:
