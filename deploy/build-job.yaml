@@ -24,7 +24,7 @@ spec:
             secretName: __REGISTRY_SECRET_NAME__
       initContainers:
         - name: checkout
-          image: alpine/git:2.47.0
+          image: alpine/git:latest
           env:
             - name: REPOSITORY
               value: "__REPOSITORY__"

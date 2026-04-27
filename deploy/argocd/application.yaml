@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://github.com/gateszhangc/eisheilige2026
+    repoURL: https://github.com/gateszhangc/eisheilige2026.git
     targetRevision: main
     path: deploy/k8s/overlays/prod
   syncPolicy:
