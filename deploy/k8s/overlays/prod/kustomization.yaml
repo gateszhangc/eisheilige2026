@@ -8,4 +8,4 @@ resources:
   - issuer.yaml
 images:
   - name: registry.144.91.77.245.sslip.io/eisheilige2026
-    newTag: 1073ff7f26aaa6059c5b8522b88583268fc58d8f
+    newTag: facf9e06e886aaa76c348c7d5e9d823c4bb771cc
