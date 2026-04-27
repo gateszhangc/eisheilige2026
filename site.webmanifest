@@ -1,20 +1,20 @@
 {
-  "name": "Artemis II Wallpaper",
-  "short_name": "Artemis II",
-  "description": "Independent editorial collection of Artemis II wallpapers using publicly released NASA imagery with source credit.",
+  "name": "Eisheilige 2026",
+  "short_name": "Eisheilige",
+  "description": "Datum, Bedeutung und Garten-Tipps rund um die Eisheiligen 2026.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#050912",
-  "theme_color": "#050912",
+  "background_color": "#07141d",
+  "theme_color": "#07141d",
   "icons": [
     {
-      "src": "/assets/brand/favicon.png",
-      "sizes": "256x256",
+      "src": "assets/brand/favicon.png",
+      "sizes": "64x64",
       "type": "image/png"
     },
     {
-      "src": "/assets/brand/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "assets/brand/logo-mark.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

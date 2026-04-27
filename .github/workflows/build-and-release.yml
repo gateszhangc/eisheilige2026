@@ -1,25 +1,53 @@
 name: Build And Release
 
 on:
+  pull_request:
   push:
     branches:
       - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: artemis-2-wallpaper-release
+  group: eisheilige2026-release-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  IMAGE_NAME: registry.144.91.77.245.sslip.io/dokploy-fleet-artemis-2-wallpaper-artemis-2-wallpaper
-  FLEET_REPO: gateszhangc/k8s-fleet
-  FLEET_TENANT_PATH: tenants/artemis-2-wallpaper/20-artemis-2-wallpaper-deployment.yaml
+  APP_NAME: eisheilige2026
+  BUILD_NAMESPACE: build-jobs
+  IMAGE_NAME: registry.144.91.77.245.sslip.io/eisheilige2026
+  GIT_AUTH_SECRET_NAME: eisheilige2026-build-git-auth
+  REGISTRY_SECRET_NAME: registry-push
+  KUSTOMIZATION_PATH: deploy/k8s/overlays/prod/kustomization.yaml
 
 jobs:
-  build-and-push:
+  test:
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 ')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm test
+
+  build-in-cluster:
+    if: github.event_name != 'pull_request' && (github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 '))
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
@@ -31,68 +59,113 @@ jobs:
         id: meta
         run: echo "image_tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
 
-      - name: Log in to registry
-        uses: docker/login-action@v3
-        with:
-          registry: registry.144.91.77.245.sslip.io
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBE_CONFIG_DATA" | base64 --decode > "$HOME/.kube/config"
 
-      - name: Build and push image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.image_tag }}
+      - name: Create build namespace
+        run: kubectl create namespace "$BUILD_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-  update-fleet:
-    needs: build-and-push
+      - name: Create build job git auth secret
+        env:
+          ACTIONS_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          kubectl -n "$BUILD_NAMESPACE" create secret generic "$GIT_AUTH_SECRET_NAME" \
+            --from-literal=token="$ACTIONS_GITHUB_TOKEN" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Render build job manifest
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          template = Path("deploy/build-job.yaml").read_text()
+          replacements = {
+              "__APP_NAME__": os.environ["APP_NAME"],
+              "__BUILD_NAMESPACE__": os.environ["BUILD_NAMESPACE"],
+              "__GIT_AUTH_SECRET_NAME__": os.environ["GIT_AUTH_SECRET_NAME"],
+              "__GIT_SHA__": os.environ["GITHUB_SHA"],
+              "__IMAGE_NAME__": os.environ["IMAGE_NAME"],
+              "__IMAGE_TAG__": os.environ["IMAGE_TAG"],
+              "__JOB_NAME__": f"{os.environ['APP_NAME']}-build-{os.environ['IMAGE_TAG']}",
+              "__REGISTRY_SECRET_NAME__": os.environ["REGISTRY_SECRET_NAME"],
+              "__REPOSITORY__": os.environ["GITHUB_REPOSITORY"],
+          }
+
+          for key, value in replacements.items():
+              template = template.replace(key, value)
+
+          Path("build-job.rendered.yaml").write_text(template)
+          PY
+
+      - name: Start cluster build job
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          kubectl -n "$BUILD_NAMESPACE" delete job "${APP_NAME}-build-${IMAGE_TAG}" --ignore-not-found
+          kubectl apply -f build-job.rendered.yaml
+
+      - name: Wait for build job
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          if ! kubectl -n "$BUILD_NAMESPACE" wait --for=condition=complete --timeout=30m "job/${APP_NAME}-build-${IMAGE_TAG}"; then
+            kubectl -n "$BUILD_NAMESPACE" logs "job/${APP_NAME}-build-${IMAGE_TAG}" --all-containers=true || true
+            exit 1
+          fi
+          kubectl -n "$BUILD_NAMESPACE" logs "job/${APP_NAME}-build-${IMAGE_TAG}" --all-containers=true
+
+  update-kustomization:
+    if: github.event_name != 'pull_request' && (github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: release eisheilige2026 '))
+    needs: build-in-cluster
     runs-on: ubuntu-latest
     steps:
-      - name: Check out fleet repo
+      - name: Check out code
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.FLEET_REPO }}
-          token: ${{ secrets.FLEET_REPO_PAT }}
-          path: k8s-fleet
+          fetch-depth: 0
 
-      - name: Update deployment image tag
+      - name: Update production image tag
         env:
-          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+          IMAGE_TAG: ${{ needs.build-in-cluster.outputs.image_tag }}
         run: |
           python3 - <<'PY'
           import os
           import re
           from pathlib import Path
 
-          path = Path("k8s-fleet") / os.environ["FLEET_TENANT_PATH"]
+          path = Path(os.environ["KUSTOMIZATION_PATH"])
           content = path.read_text()
           updated, count = re.subn(
-              r"(^\s*image:\s*registry\.144\.91\.77\.245\.sslip\.io/dokploy-fleet-artemis-2-wallpaper-artemis-2-wallpaper:).*$",
+              r"(^\s*newTag:\s*).*$",
               rf"\1{os.environ['IMAGE_TAG']}",
               content,
               count=1,
               flags=re.MULTILINE,
           )
           if count != 1:
-              raise SystemExit("Expected exactly one image line to update in the fleet deployment manifest.")
+              raise SystemExit(f"Expected exactly one newTag entry in {path}.")
           path.write_text(updated)
           PY
 
-      - name: Commit fleet update
+      - name: Commit kustomization update
         env:
-          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+          IMAGE_TAG: ${{ needs.build-in-cluster.outputs.image_tag }}
         run: |
-          cd k8s-fleet
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$FLEET_TENANT_PATH"
+          git add "$KUSTOMIZATION_PATH"
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: release artemis-2-wallpaper ${IMAGE_TAG}"
+          git commit -m "chore: release eisheilige2026 ${IMAGE_TAG}"
           git push origin HEAD:main

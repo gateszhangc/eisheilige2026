@@ -1,0 +1,46 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="54" y1="42" x2="1116" y2="586" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#08131B" />
+      <stop offset="1" stop-color="#11353A" />
+    </linearGradient>
+    <radialGradient id="soft" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(226 132) rotate(35) scale(420 280)">
+      <stop stop-color="#8EDCF2" stop-opacity="0.3" />
+      <stop offset="1" stop-color="#8EDCF2" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2FDFF" />
+      <stop offset="0.48" stop-color="#97DCEF" />
+      <stop offset="1" stop-color="#1A5560" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" rx="40" fill="url(#bg)" />
+  <rect width="1200" height="630" rx="40" fill="url(#soft)" />
+  <rect x="38" y="38" width="1124" height="554" rx="28" stroke="rgba(232,251,255,0.14)" stroke-width="2" />
+
+  <g opacity="0.32">
+    <path d="M80 165H1120" stroke="#C9F6FF" stroke-width="1.5" />
+    <path d="M80 457H1120" stroke="#C9F6FF" stroke-width="1.5" />
+    <path d="M720 78V552" stroke="#C9F6FF" stroke-width="1.5" />
+  </g>
+
+  <text x="84" y="122" fill="#9FD8E6" font-family="Helvetica Neue, Arial, sans-serif" font-size="22" letter-spacing="8">MITTELEUROPÄISCHE WETTERREGEL</text>
+  <text x="84" y="252" fill="#F2FDFF" font-family="Baskerville, Georgia, serif" font-size="94" font-weight="700">Eisheilige</text>
+  <text x="84" y="336" fill="#F2FDFF" font-family="Baskerville, Georgia, serif" font-size="94" font-weight="700">2026</text>
+  <text x="88" y="412" fill="#DCEEF1" font-family="Helvetica Neue, Arial, sans-serif" font-size="29">11. bis 15. Mai 2026 · Bedeutung, Frostfenster und Gartenpraxis</text>
+  <text x="88" y="470" fill="#B9D0D7" font-family="Helvetica Neue, Arial, sans-serif" font-size="25">Fünf Tage, die als letzte kalte Wegmarke im Frühjahr gelten.</text>
+
+  <g transform="translate(806 112)">
+    <rect width="286" height="364" rx="42" fill="rgba(255,255,255,0.04)" stroke="rgba(232,251,255,0.14)" stroke-width="2" />
+    <circle cx="143" cy="176" r="102" stroke="rgba(235,252,255,0.22)" stroke-width="2" />
+    <path d="M66 230C86.8 205.733 117.133 193.6 157 193.6C195.667 193.6 226.667 205.733 250 230" stroke="#92D8EC" stroke-opacity="0.5" stroke-width="6" stroke-linecap="round" />
+    <rect x="63" y="150" width="20" height="88" rx="10" fill="url(#ice)" />
+    <rect x="104" y="116" width="20" height="122" rx="10" fill="url(#ice)" />
+    <rect x="145" y="86" width="20" height="152" rx="10" fill="url(#ice)" />
+    <rect x="186" y="108" width="20" height="130" rx="10" fill="url(#ice)" />
+    <rect x="227" y="142" width="20" height="96" rx="10" fill="url(#ice)" />
+    <text x="57" y="286" fill="#D8F4FB" font-family="Helvetica Neue, Arial, sans-serif" font-size="16" letter-spacing="5">11  12  13  14  15</text>
+    <text x="56" y="318" fill="#AAC6CF" font-family="Helvetica Neue, Arial, sans-serif" font-size="18">Frostfenster im Blick behalten</text>
+  </g>
+</svg>

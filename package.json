@@ -1,8 +1,8 @@
 {
-  "name": "artemis-2-wallpaper",
+  "name": "eisheilige2026",
   "version": "1.0.0",
   "private": true,
-  "description": "Static Artemis II wallpaper site built from publicly released NASA imagery.",
+  "description": "Static German explainer site for Eisheilige 2026.",
   "scripts": {
     "start": "node server.js",
     "test": "playwright test",

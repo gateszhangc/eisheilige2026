@@ -6,14 +6,10 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-COPY assets ./assets
-COPY index.html ./index.html
-COPY robots.txt ./robots.txt
-COPY script.js ./script.js
-COPY server.js ./server.js
-COPY site.webmanifest ./site.webmanifest
-COPY sitemap.xml ./sitemap.xml
-COPY styles.css ./styles.css
+COPY --chown=node:node assets ./assets
+COPY --chown=node:node index.html robots.txt server.js site.webmanifest sitemap.xml styles.css ./
+
+USER node
 
 EXPOSE 3000
 

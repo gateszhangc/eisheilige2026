@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eisheilige2026
+  labels:
+    app.kubernetes.io/name: eisheilige2026
+    app.kubernetes.io/part-of: eisheilige2026
+spec:
+  selector:
+    app.kubernetes.io/name: eisheilige2026
+    app.kubernetes.io/part-of: eisheilige2026
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

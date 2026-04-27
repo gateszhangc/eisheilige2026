@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eisheilige2026
+  namespace: argocd
+spec:
+  destination:
+    namespace: eisheilige2026
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/gateszhangc/eisheilige2026
+    targetRevision: main
+    path: deploy/k8s/overlays/prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

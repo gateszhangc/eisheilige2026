@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eisheilige2026
+  annotations:
+    cert-manager.io/issuer: letsencrypt-dns-prod
+    cert-manager.io/issue-temporary-certificate: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: eisheilige2026-live-tls
+      hosts:
+        - eisheilige2026.lol
+        - www.eisheilige2026.lol
+  rules:
+    - host: eisheilige2026.lol
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: eisheilige2026
+                port:
+                  number: 80
